@@ -81,6 +81,20 @@ impl Object {
         }
     }
 
+    /// Add multiple traits without timestamp updates (for bulk operations)
+    pub fn add_traits_bulk(&mut self, traits: impl IntoIterator<Item = Trait>) {
+        for trait_obj in traits {
+            self.traits.insert(trait_obj.name().to_string(), trait_obj);
+        }
+        // Don't update timestamp for bulk operations
+    }
+
+    /// Add a trait without timestamp update (for internal operations)
+    pub fn add_trait_internal(&mut self, trait_obj: Trait) {
+        self.traits.insert(trait_obj.name().to_string(), trait_obj);
+        // Don't update timestamp for internal operations
+    }
+
     /// Remove a trait from this object
     pub fn remove_trait(&mut self, trait_name: &str) -> Option<Trait> {
         let result = self.traits.remove(trait_name);

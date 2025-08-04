@@ -155,12 +155,12 @@ impl System for SimpleSystem {
     }
 
     async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>> {
-        let mut results = Vec::new();
+        let mut results = Vec::with_capacity(objects.len() * self.actions.len()); // Pre-allocate
         let start_time = std::time::Instant::now();
 
         for object in objects {
             for action in &self.actions {
-                let mut context = ActionContext::new();
+                let mut context = ActionContext::with_capacity(1, 0); // Pre-allocate for single object
                 context.add_object("target", object.clone());
 
                 match action.execute(context).await {

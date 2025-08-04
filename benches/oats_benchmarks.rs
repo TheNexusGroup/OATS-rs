@@ -131,15 +131,14 @@ fn create_test_objects(count: usize) -> Vec<Object> {
     for i in 0..count {
         let mut obj = Object::new(format!("object_{}", i), "test_type");
         
-        // Add some traits
+        // Add some traits using bulk operation
         let health_trait = Trait::new("health", TraitData::Number(100.0));
         let mut position_data = HashMap::new();
         position_data.insert("x".to_string(), serde_json::json!(i as f64));
         position_data.insert("y".to_string(), serde_json::json!(i as f64));
         let position_trait = Trait::new("position", TraitData::Object(position_data));
         
-        obj.add_trait(health_trait);
-        obj.add_trait(position_trait);
+        obj.add_traits_bulk(vec![health_trait, position_trait]);
         
         objects.push(obj);
     }
@@ -165,7 +164,7 @@ fn create_complex_objects(count: usize) -> Vec<Object> {
             Trait::new("name", TraitData::String(format!("Player_{}", i))),
         ];
         
-        obj.add_traits(traits);
+        obj.add_traits_bulk(traits);
         
         // Add metadata
         obj.set_metadata("created_by", "benchmark");
@@ -240,6 +239,24 @@ fn benchmark_trait_operations(c: &mut Criterion) {
                 .collect();
             
             obj.add_traits(traits);
+            black_box(obj);
+        });
+    });
+
+    group.bench_function("add_traits_bulk_optimized", |b| {
+        b.iter(|| {
+            let mut obj = Object::new("test", "type");
+            
+            // Add traits using optimized bulk operation
+            let traits: Vec<Trait> = (0..10)
+                .map(|i| {
+                    let trait_name = format!("trait_{}", i);
+                    let trait_data = TraitData::Number(i as f64);
+                    Trait::new(&trait_name, trait_data)
+                })
+                .collect();
+            
+            obj.add_traits_bulk(traits);
             black_box(obj);
         });
     });
@@ -501,13 +518,15 @@ fn benchmark_memory_efficiency(c: &mut Criterion) {
             let mut obj = Object::new("large_object", "type");
             
             // Add many traits to test memory efficiency
-            for i in 0..100 {
-                let trait_name = format!("trait_{}", i);
-                let trait_data = TraitData::String(format!("value_{}", i));
-                let trait_obj = Trait::new(&trait_name, trait_data);
-                obj.add_trait(trait_obj);
-            }
+            let traits: Vec<Trait> = (0..100)
+                .map(|i| {
+                    let trait_name = format!("trait_{}", i);
+                    let trait_data = TraitData::String(format!("value_{}", i));
+                    Trait::new(&trait_name, trait_data)
+                })
+                .collect();
             
+            obj.add_traits_bulk(traits);
             black_box(obj);
         });
     });
@@ -525,7 +544,7 @@ fn benchmark_memory_efficiency(c: &mut Criterion) {
                 })
                 .collect();
             
-            obj.add_traits(traits);
+            obj.add_traits_bulk(traits);
             black_box(obj);
         });
     });
