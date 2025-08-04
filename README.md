@@ -74,7 +74,7 @@ Or use the latest from this repository:
 
 ```toml
 [dependencies]
-oats = { git = "https://github.com/your-org/OATS-rs" }
+oats = { git = "https://github.com/TheNexusGroup/OATS-rs" }
 ```
 
 ## 🏗️ Core Abstractions

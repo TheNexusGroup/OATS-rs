@@ -10,7 +10,7 @@ documentation = "https://docs.rs/oats"
 readme = "README.md"
 keywords = ["oats", "architecture", "objects", "actions", "traits", "systems", "async", "concurrent", "scalable"]
 categories = ["asynchronous", "data-structures", "game-development", "web-programming", "api-bindings"]
-authors = ["The Nexus Group <info@thenexusgroup.com>"]
+authors = ["Richard Christopher dev@ancillary.enterprises>"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
