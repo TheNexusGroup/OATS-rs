@@ -8,7 +8,7 @@ repository = "https://github.com/TheNexusGroup/OATS-rs"
 homepage = "https://github.com/TheNexusGroup/OATS-rs"
 documentation = "https://docs.rs/oats-framework"
 readme = "README.md"
-keywords = ["oats", "architecture", "objects", "actions", "traits", "systems", "async", "concurrent", "scalable", "framework"]
+keywords = ["oats", "architecture", "framework", "async", "scalable"]
 categories = ["asynchronous", "data-structures", "game-development", "web-programming", "api-bindings"]
 authors = ["Richard Christopher dev@ancillary.enterprises>"]
 
