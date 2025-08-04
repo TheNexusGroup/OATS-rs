@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::{Result, Object, Action, OatsError};
-use crate::actions::{ActionContext, ActionResult};
+use crate::{Result, Object, OatsError};
+use crate::actions::ActionResult;
 
 /// System identifier
 pub type SystemId = uuid::Uuid;
@@ -83,7 +83,6 @@ pub struct SystemStats {
 
 impl SystemStats {
     /// Update stats with new processing time
-    #[inline]
     pub fn update_processing_time(&mut self, processing_time_ms: u64) {
         self.total_processing_time_ms += processing_time_ms;
         self.peak_processing_time_ms = self.peak_processing_time_ms.max(processing_time_ms);
@@ -94,7 +93,6 @@ impl SystemStats {
     }
 
     /// Get processing throughput (objects per second)
-    #[inline]
     pub fn throughput_objects_per_second(&self) -> f64 {
         if self.total_processing_time_ms > 0 {
             (self.objects_processed as f64 * 1000.0) / self.total_processing_time_ms as f64
@@ -104,7 +102,6 @@ impl SystemStats {
     }
 
     /// Reset all stats
-    #[inline]
     pub fn reset(&mut self) {
         self.objects_processed = 0;
         self.actions_executed = 0;
@@ -116,7 +113,6 @@ impl SystemStats {
     }
 
     /// Get error rate as percentage
-    #[inline]
     pub fn error_rate(&self) -> f64 {
         let total = self.objects_processed + self.actions_executed;
         if total > 0 {
@@ -124,148 +120,6 @@ impl SystemStats {
         } else {
             0.0
         }
-    }
-}
-
-/// A simple system that can be created from actions
-pub struct SimpleSystem {
-    name: String,
-    description: String,
-    priority: Priority,
-    actions: Vec<Box<dyn Action>>,
-    stats: SystemStats,
-}
-
-impl SimpleSystem {
-    /// Create a new simple system
-    #[inline]
-    pub fn new(name: impl Into<String>, description: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            description: description.into(),
-            priority: Priority::Normal,
-            actions: Vec::new(),
-            stats: SystemStats::default(),
-        }
-    }
-
-    /// Create a new simple system with pre-allocated capacity
-    pub fn with_capacity(
-        name: impl Into<String>,
-        description: impl Into<String>,
-        action_capacity: usize,
-    ) -> Self {
-        Self {
-            name: name.into(),
-            description: description.into(),
-            priority: Priority::Normal,
-            actions: Vec::with_capacity(action_capacity),
-            stats: SystemStats::default(),
-        }
-    }
-
-    /// Set the priority of this system
-    #[inline]
-    pub fn with_priority(mut self, priority: Priority) -> Self {
-        self.priority = priority;
-        self
-    }
-
-    /// Add an action to this system
-    #[inline]
-    pub fn add_action(&mut self, action: Box<dyn Action>) {
-        self.actions.push(action);
-    }
-
-    /// Get all actions in this system
-    #[inline]
-    pub fn actions(&self) -> &[Box<dyn Action>] {
-        &self.actions
-    }
-
-    /// Get action count
-    #[inline]
-    pub fn action_count(&self) -> usize {
-        self.actions.len()
-    }
-
-    /// Reserve capacity for actions
-    #[inline]
-    pub fn reserve_actions(&mut self, additional: usize) {
-        self.actions.reserve(additional);
-    }
-
-    /// Clear all actions
-    #[inline]
-    pub fn clear_actions(&mut self) {
-        self.actions.clear();
-    }
-
-    /// Get system stats
-    #[inline]
-    pub fn stats(&self) -> &SystemStats {
-        &self.stats
-    }
-
-    /// Get mutable system stats
-    #[inline]
-    pub fn stats_mut(&mut self) -> &mut SystemStats {
-        &mut self.stats
-    }
-
-    /// Reset system stats
-    #[inline]
-    pub fn reset_stats(&mut self) {
-        self.stats.reset();
-    }
-}
-
-#[async_trait]
-impl System for SimpleSystem {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn description(&self) -> &str {
-        &self.description
-    }
-
-    fn priority(&self) -> Priority {
-        self.priority
-    }
-
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>> {
-        let mut results = Vec::with_capacity(objects.len() * self.actions.len()); // Pre-allocate
-        let start_time = std::time::Instant::now();
-
-        for object in objects {
-            for action in &self.actions {
-                let mut context = ActionContext::with_capacity(1, 0); // Pre-allocate for single object
-                context.add_object("target", object.clone());
-
-                match action.execute(context).await {
-                    Ok(result) => {
-                        results.push(result);
-                        self.stats.actions_executed += 1;
-                    }
-                    Err(e) => {
-                        self.stats.errors += 1;
-                        let error_result = ActionResult::failure(format!("Action failed: {}", e));
-                        results.push(error_result);
-                    }
-                }
-            }
-            self.stats.objects_processed += 1;
-        }
-
-        self.stats.update_processing_time(start_time.elapsed().as_millis() as u64);
-        self.stats.last_processed = Some(chrono::Utc::now());
-
-        Ok(results)
-    }
-
-    fn get_stats(&self) -> SystemStats {
-        self.stats.clone()
     }
 }
 
@@ -277,16 +131,14 @@ pub struct SystemManager {
 
 impl SystemManager {
     /// Create a new system manager
-    #[inline]
     pub fn new() -> Self {
         Self {
             systems: HashMap::new(),
-            object_registry: Arc::new(RwLock::new(HashMap::with_capacity(100))), // Pre-allocate for common use case
+            object_registry: Arc::new(RwLock::new(HashMap::with_capacity(100))),
         }
     }
 
     /// Create a new system manager with expected capacity
-    #[inline]
     pub fn with_capacity(expected_objects: usize) -> Self {
         Self {
             systems: HashMap::new(),
@@ -295,52 +147,44 @@ impl SystemManager {
     }
 
     /// Add a system to the manager
-    #[inline]
     pub fn add_system(&mut self, system: Box<dyn System>) {
         let name = system.name().to_string();
         self.systems.insert(name, system);
     }
 
     /// Remove a system from the manager
-    #[inline]
     pub fn remove_system(&mut self, name: &str) -> Option<Box<dyn System>> {
         self.systems.remove(name)
     }
 
     /// Get a system by name
-    #[inline]
     pub fn get_system(&self, name: &str) -> Option<&Box<dyn System>> {
         self.systems.get(name)
     }
 
     /// Get all systems
-    #[inline]
     pub fn systems(&self) -> &HashMap<String, Box<dyn System>> {
         &self.systems
     }
 
     /// Get system count
-    #[inline]
     pub fn system_count(&self) -> usize {
         self.systems.len()
     }
 
     /// Register an object with the manager
-    #[inline]
     pub async fn register_object(&self, object: Object) {
         let mut registry = self.object_registry.write().await;
         registry.insert(object.id.to_string(), object);
     }
 
     /// Get an object by ID
-    #[inline]
     pub async fn get_object(&self, id: &str) -> Option<Object> {
         let registry = self.object_registry.read().await;
         registry.get(id).cloned()
     }
 
     /// Get all objects
-    #[inline]
     pub async fn get_all_objects(&self) -> Vec<Object> {
         let registry = self.object_registry.read().await;
         registry.values().cloned().collect()
@@ -369,7 +213,7 @@ impl SystemManager {
         let objects = self.get_all_objects().await;
         let mut all_results = Vec::new();
 
-        // Sort systems by priority (highest first) - avoid collecting into Vec
+        // Sort systems by priority (highest first)
         let mut system_names: Vec<_> = self.systems.keys().cloned().collect();
         system_names.sort_by(|a, b| {
             let a_priority = self.systems.get(a).map(|s| s.priority()).unwrap_or(Priority::Normal);

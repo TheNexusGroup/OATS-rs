@@ -341,7 +341,7 @@ This pattern runs the foundational infrastructure behind every platform that ach
 
 - [API Documentation](https://docs.rs/oats)
 - [Architecture Guide](ARCHITECTURE.md)
-- [Performance Guide](PERFORMANCE.md)
+- [Performance Guide](PERFORMANCE_ANALYSIS.md)
 - [Examples Directory](examples/)
 
 ## 🤝 Contributing

@@ -18,7 +18,7 @@ pub mod error;
 pub use objects::Object;
 pub use actions::{Action, ActionContext, ActionResult, SimpleAction};
 pub use traits::{Trait, TraitData};
-pub use systems::{System, SystemManager, Priority, SimpleSystem};
+pub use systems::{System, SystemManager, Priority};
 pub use error::OatsError;
 
 /// Result type for OATS operations

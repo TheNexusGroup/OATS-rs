@@ -72,32 +72,27 @@ impl Object {
     }
 
     /// Get the object name
-    #[inline]
     pub fn name(&self) -> &str {
         &self.name
     }
 
     /// Get the object type
-    #[inline]
     pub fn object_type(&self) -> &str {
         &self.object_type
     }
 
     /// Get the object ID
-    #[inline]
     pub fn id(&self) -> ObjectId {
         self.id
     }
 
     /// Add a trait to this object
-    #[inline]
     pub fn add_trait(&mut self, trait_obj: Trait) {
         self.traits.insert(trait_obj.name().to_string(), trait_obj);
         self.updated_at = chrono::Utc::now();
     }
 
     /// Add multiple traits efficiently
-    #[inline]
     pub fn add_traits(&mut self, traits: impl IntoIterator<Item = Trait>) {
         let mut updated = false;
         for trait_obj in traits {
@@ -110,7 +105,6 @@ impl Object {
     }
 
     /// Add multiple traits without timestamp updates (for bulk operations)
-    #[inline]
     pub fn add_traits_bulk(&mut self, traits: impl IntoIterator<Item = Trait>) {
         for trait_obj in traits {
             self.traits.insert(trait_obj.name().to_string(), trait_obj);
@@ -119,7 +113,6 @@ impl Object {
     }
 
     /// Add a trait without timestamp update (for internal operations)
-    #[inline]
     pub fn add_trait_internal(&mut self, trait_obj: Trait) {
         self.traits.insert(trait_obj.name().to_string(), trait_obj);
         // Don't update timestamp for internal operations
@@ -319,7 +312,7 @@ mod tests {
         let mut obj = Object::new("test", "type");
         let trait_obj = Trait::new("test_trait", TraitData::String("value".to_string()));
         
-        obj.add_trait(trait_obj);
+        obj.add_trait_internal(trait_obj);
         assert_eq!(obj.trait_count(), 1);
         assert!(obj.has_trait("test_trait"));
         
