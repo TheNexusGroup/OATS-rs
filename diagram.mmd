@@ -1,0 +1,27 @@
+graph TB
+    subgraph OBJECTS["OBJECTS"]
+        O["Identity Container<br/>Composes traits"]
+    end
+    
+    subgraph TRAITS["TRAITS"] 
+        T["Immutable State<br/>Domain data"]
+    end
+    
+    subgraph ACTIONS["ACTIONS"]
+        A["Stateless Logic<br/>Reads traits<br/>Returns updates"]
+    end
+    
+    subgraph SYSTEMS["SYSTEMS"]
+        S["Orchestration<br/>Coordinates actions<br/>Manages resources"]
+    end
+    
+    %% Core Relationships
+    O --> T
+    A --> T
+    S --> A
+    A --> T
+    
+    %% Flow
+    O ==> S
+    S ==> A
+    A ==> T

@@ -1,0 +1,11 @@
+[package]
+name = "oats-basic-example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+oats = { path = "../.." }
+tokio = { version = "1.0", features = ["full"] }
+serde_json = "1.0"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] } 
