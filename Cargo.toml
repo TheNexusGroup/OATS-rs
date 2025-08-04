@@ -1,14 +1,14 @@
 [package]
-name = "oats"
+name = "oats-framework"
 version = "0.1.0"
 edition = "2021"
 description = "Universal architecture pattern for infinite scale across any domain - Objects • Actions • Traits • Systems"
 license = "MIT"
 repository = "https://github.com/TheNexusGroup/OATS-rs"
 homepage = "https://github.com/TheNexusGroup/OATS-rs"
-documentation = "https://docs.rs/oats"
+documentation = "https://docs.rs/oats-framework"
 readme = "README.md"
-keywords = ["oats", "architecture", "objects", "actions", "traits", "systems", "async", "concurrent", "scalable"]
+keywords = ["oats", "architecture", "objects", "actions", "traits", "systems", "async", "concurrent", "scalable", "framework"]
 categories = ["asynchronous", "data-structures", "game-development", "web-programming", "api-bindings"]
 authors = ["Richard Christopher dev@ancillary.enterprises>"]
 

@@ -1,10 +1,6 @@
-use oats::{
-    Object, Trait, Action, System,
-    traits::TraitData,
-    actions::{ActionContext, ActionResult},
-    systems::{SystemManager, Priority},
-};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
 use std::collections::HashMap;
+use async_trait::async_trait;
 
 // Custom business actions
 struct ProcessOrderAction {
@@ -23,7 +19,7 @@ impl ProcessOrderAction {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl Action for ProcessOrderAction {
     fn name(&self) -> &str {
         "process_order"
@@ -33,10 +29,10 @@ impl Action for ProcessOrderAction {
         "Processes a customer order"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, OatsError> {
         let customer = context
             .get_object("customer")
-            .ok_or_else(|| oats::OatsError::action_failed("Customer not found"))?;
+            .ok_or_else(|| OatsError::action_failed("Customer not found"))?;
 
         // Create order trait
         let mut order_data = HashMap::new();
@@ -82,7 +78,7 @@ impl UpdateInventoryAction {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl Action for UpdateInventoryAction {
     fn name(&self) -> &str {
         "update_inventory"
@@ -92,10 +88,10 @@ impl Action for UpdateInventoryAction {
         "Updates product inventory levels"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, OatsError> {
         let product = context
             .get_object("product")
-            .ok_or_else(|| oats::OatsError::action_failed("Product not found"))?;
+            .ok_or_else(|| OatsError::action_failed("Product not found"))?;
 
         let current_stock = product
             .get_trait("stock")
@@ -132,7 +128,7 @@ impl ApplyDiscountAction {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl Action for ApplyDiscountAction {
     fn name(&self) -> &str {
         "apply_discount"
@@ -142,10 +138,10 @@ impl Action for ApplyDiscountAction {
         "Applies a discount to product pricing"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, OatsError> {
         let product = context
             .get_object("product")
-            .ok_or_else(|| oats::OatsError::action_failed("Product not found"))?;
+            .ok_or_else(|| OatsError::action_failed("Product not found"))?;
 
         let current_price = product
             .get_trait("price")
@@ -171,7 +167,7 @@ impl Action for ApplyDiscountAction {
 struct OrderProcessingSystem {
     name: String,
     description: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl OrderProcessingSystem {
@@ -179,12 +175,12 @@ impl OrderProcessingSystem {
         Self {
             name: "order_processing_system".to_string(),
             description: "Handles customer order processing".to_string(),
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl System for OrderProcessingSystem {
     fn name(&self) -> &str {
         &self.name
@@ -194,7 +190,7 @@ impl System for OrderProcessingSystem {
         &self.description
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -239,7 +235,7 @@ impl System for OrderProcessingSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }
@@ -247,7 +243,7 @@ impl System for OrderProcessingSystem {
 struct InventoryManagementSystem {
     name: String,
     description: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl InventoryManagementSystem {
@@ -255,12 +251,12 @@ impl InventoryManagementSystem {
         Self {
             name: "inventory_management_system".to_string(),
             description: "Manages product inventory levels".to_string(),
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl System for InventoryManagementSystem {
     fn name(&self) -> &str {
         &self.name
@@ -270,7 +266,7 @@ impl System for InventoryManagementSystem {
         &self.description
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -312,7 +308,7 @@ impl System for InventoryManagementSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }
@@ -320,7 +316,7 @@ impl System for InventoryManagementSystem {
 struct PricingSystem {
     name: String,
     description: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl PricingSystem {
@@ -328,12 +324,12 @@ impl PricingSystem {
         Self {
             name: "pricing_system".to_string(),
             description: "Manages product pricing and discounts".to_string(),
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl System for PricingSystem {
     fn name(&self) -> &str {
         &self.name
@@ -343,7 +339,7 @@ impl System for PricingSystem {
         &self.description
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -383,7 +379,7 @@ impl System for PricingSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }

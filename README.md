@@ -63,18 +63,18 @@ This repository contains a complete Rust implementation of the OATS architecture
 
 ## 📦 Installation
 
-Add OATS to your `Cargo.toml`:
+Add OATS Framework to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-oats = "0.1.0"
+oats-framework = "0.1.0"
 ```
 
 Or use the latest from this repository:
 
 ```toml
 [dependencies]
-oats = { git = "https://github.com/TheNexusGroup/OATS-rs" }
+oats-framework = { git = "https://github.com/TheNexusGroup/oats-framework" }
 ```
 
 ## 🏗️ Core Abstractions
@@ -83,7 +83,7 @@ oats = { git = "https://github.com/TheNexusGroup/OATS-rs" }
 Pure composition. Zero behavior pollution. Maximum modularity.
 
 ```rust
-use oats::{Object, Trait, TraitData};
+use oats_framework::{Object, Trait, TraitData};
 
 // Create an object
 let mut player = Object::new("player_1", "character");
@@ -104,7 +104,7 @@ if let Some(health) = player.get_trait("health") {
 Immutable data structures. Single source of truth. Auditable state management.
 
 ```rust
-use oats::{Trait, TraitData};
+use oats_framework::{Trait, TraitData};
 
 // Create traits with different data types
 let string_trait = Trait::new("name", TraitData::String("Hero".to_string()));
@@ -122,7 +122,7 @@ let position_trait = Trait::new("position", TraitData::Object(position_data));
 Stateless operations. Horizontally scalable. Domain-independent processing.
 
 ```rust
-use oats::{Action, ActionContext, ActionResult};
+use oats_framework::{Action, ActionContext, ActionResult};
 
 // Create a custom action
 struct HealAction;
@@ -132,7 +132,7 @@ impl Action for HealAction {
     fn name(&self) -> &str { "heal" }
     fn description(&self) -> &str { "Restores health to target" }
     
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let target = context.get_object("target").unwrap();
         let current_health = target.get_trait("health")
             .and_then(|t| t.data().as_number())
@@ -158,11 +158,11 @@ let result = heal_action.execute(context).await?;
 Resource allocation. Priority management. Cross-domain coordination.
 
 ```rust
-use oats::{System, SystemManager, Priority};
+use oats_framework::{System, SystemManager, Priority};
 
 // Create a system
 struct HealthSystem {
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 #[async_trait::async_trait]
@@ -170,7 +170,7 @@ impl System for HealthSystem {
     fn name(&self) -> &str { "health_system" }
     fn description(&self) -> &str { "Manages health-related operations" }
     
-    async fn process(&mut self, objects: Vec<Object>, priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         // Your custom processing logic here
         Ok(vec![])
     }
@@ -319,7 +319,7 @@ Benchmark results show:
 
 ### Custom Actions
 ```rust
-use oats::{Action, ActionContext, ActionResult};
+use oats_framework::{Action, ActionContext, ActionResult};
 
 struct CustomAction {
     parameter: String,
@@ -330,7 +330,7 @@ impl Action for CustomAction {
     fn name(&self) -> &str { "custom_action" }
     fn description(&self) -> &str { "A custom action" }
     
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         // Your custom logic here
         let mut result = ActionResult::success();
         result.add_message("Custom action executed");
@@ -341,11 +341,11 @@ impl Action for CustomAction {
 
 ### Custom Systems
 ```rust
-use oats::{System, Priority};
+use oats_framework::{System, Priority};
 
 struct CustomSystem {
     name: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 #[async_trait::async_trait]
@@ -353,7 +353,7 @@ impl System for CustomSystem {
     fn name(&self) -> &str { &self.name }
     fn description(&self) -> &str { "A custom system" }
     
-    async fn process(&mut self, objects: Vec<Object>, priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         // Your custom processing logic here
         Ok(vec![])
     }
@@ -362,7 +362,7 @@ impl System for CustomSystem {
 
 ### Error Handling
 ```rust
-use oats::{Result, OatsError};
+use oats_framework::{Result, OatsError};
 
 fn handle_oats_operation() -> Result<()> {
     // OATS operations return Result<T, OatsError>
@@ -398,8 +398,8 @@ This pattern runs the foundational infrastructure behind every platform that ach
 
 ## 📚 Documentation
 
-- [API Documentation](https://docs.rs/oats)
-- [Architecture Guide](ARCHITECTURE.md)
+- [API Documentation](https://docs.rs/oats-framework)
+- [Architecture Guide](architecture.mmd)
 - [Performance Guide](PERFORMANCE_ANALYSIS.md)
 - [Examples Directory](examples/)
 
@@ -436,9 +436,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
    ./run_examples.sh bench
    ```
 
-5. **Start building with OATS**:
+5. **Start building with OATS Framework**:
    ```rust
-   use oats::{Object, Trait, TraitData, SystemManager};
+   use oats_framework::{Object, Trait, TraitData, SystemManager};
    
    fn main() {
        // Your OATS-powered application here

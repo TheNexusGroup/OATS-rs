@@ -1,11 +1,6 @@
-use oats::{
-    Object, Trait, Action, System,
-    traits::TraitData,
-    actions::{ActionContext, ActionResult},
-    systems::{SystemManager, Priority},
-};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
 use std::collections::HashMap;
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 use rand::rngs::StdRng;
 
 // Custom game actions
@@ -29,19 +24,19 @@ impl Action for CombatAction {
         "Deals damage to target"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let target = context
             .get_object("target")
-            .ok_or_else(|| oats::OatsError::action_failed("Target not found"))?;
+            .ok_or_else(|| oats_framework::OatsError::action_failed("Target not found"))?;
 
         let health_trait = target
             .get_trait("health")
-            .ok_or_else(|| oats::OatsError::trait_not_found("health"))?;
+            .ok_or_else(|| oats_framework::OatsError::trait_not_found("health"))?;
 
         let current_health = health_trait
             .data()
             .as_number()
-            .ok_or_else(|| oats::OatsError::action_failed("Health trait is not numeric"))?;
+            .ok_or_else(|| oats_framework::OatsError::action_failed("Health trait is not numeric"))?;
 
         let new_health = (current_health - self.damage).max(0.0);
         let new_health_trait = Trait::new("health", TraitData::Number(new_health));
@@ -82,10 +77,10 @@ impl Action for MovementAction {
         "Moves character to new position"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let target = context
             .get_object("target")
-            .ok_or_else(|| oats::OatsError::action_failed("Target not found"))?;
+            .ok_or_else(|| oats_framework::OatsError::action_failed("Target not found"))?;
 
         let mut position_data = HashMap::new();
         position_data.insert("x".to_string(), serde_json::json!(self.new_x));
@@ -108,7 +103,7 @@ impl Action for MovementAction {
 struct CombatSystem {
     name: String,
     description: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl CombatSystem {
@@ -116,7 +111,7 @@ impl CombatSystem {
         Self {
             name: "combat_system".to_string(),
             description: "Handles combat between characters".to_string(),
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -131,7 +126,7 @@ impl System for CombatSystem {
         &self.description
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -180,7 +175,7 @@ impl System for CombatSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }
@@ -188,7 +183,7 @@ impl System for CombatSystem {
 struct MovementSystem {
     name: String,
     description: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl MovementSystem {
@@ -196,7 +191,7 @@ impl MovementSystem {
         Self {
             name: "movement_system".to_string(),
             description: "Handles character movement".to_string(),
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -211,7 +206,7 @@ impl System for MovementSystem {
         &self.description
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -247,7 +242,7 @@ impl System for MovementSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }

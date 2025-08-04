@@ -1,8 +1,8 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use oats::{
-    Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority,
-};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
+use std::collections::HashMap;
 use async_trait::async_trait;
+use tokio::runtime::Runtime;
 
 // Simple benchmark action
 struct SimpleBenchmarkAction;
@@ -17,7 +17,7 @@ impl Action for SimpleBenchmarkAction {
         "Simple benchmark action"
     }
 
-    async fn execute(&self, _context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, _context: ActionContext) -> Result<ActionResult, OatsError> {
         let mut result = ActionResult::success();
         result.add_message("Benchmark action executed");
         Ok(result)
@@ -26,13 +26,13 @@ impl Action for SimpleBenchmarkAction {
 
 // Simple benchmark system
 struct SimpleBenchmarkSystem {
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl SimpleBenchmarkSystem {
     fn new() -> Self {
         Self {
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -47,7 +47,7 @@ impl System for SimpleBenchmarkSystem {
         "Simple benchmark system"
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, OatsError> {
         let mut results = Vec::with_capacity(objects.len());
         let start_time = std::time::Instant::now();
 
@@ -73,7 +73,7 @@ impl System for SimpleBenchmarkSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }

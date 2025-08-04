@@ -1,9 +1,8 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use oats::{
-    Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority,
-};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
 use std::collections::HashMap;
 use async_trait::async_trait;
+use tokio::runtime::Runtime;
 
 // Benchmark increment action
 #[derive(Clone)]
@@ -31,7 +30,7 @@ impl Action for BenchmarkIncrementAction {
         "Benchmark increment action"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, OatsError> {
         let target = context.get_object("target").unwrap();
         let current_value = target.get_trait(&self.trait_name)
             .and_then(|t| t.data().as_number())
@@ -48,13 +47,13 @@ impl Action for BenchmarkIncrementAction {
 
 // Benchmark system
 struct BenchmarkSystem {
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl BenchmarkSystem {
     fn new() -> Self {
         Self {
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -69,7 +68,7 @@ impl System for BenchmarkSystem {
         "Benchmark system"
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, OatsError> {
         let mut results = Vec::with_capacity(objects.len());
         let start_time = std::time::Instant::now();
 
@@ -96,7 +95,7 @@ impl System for BenchmarkSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }

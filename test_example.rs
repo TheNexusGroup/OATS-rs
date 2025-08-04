@@ -1,9 +1,6 @@
-use oats::{
-    Object, Trait, Action, System,
-    traits::TraitData,
-    actions::{ActionContext, ActionResult},
-    systems::{SystemManager, Priority},
-};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
+use std::collections::HashMap;
+use async_trait::async_trait;
 
 // Custom test actions
 struct TestIncrementAction {
@@ -30,19 +27,19 @@ impl Action for TestIncrementAction {
         "Test action that increments a trait"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let target_object = context
             .get_object("target")
-            .ok_or_else(|| oats::OatsError::action_failed("Target object not found"))?;
+            .ok_or_else(|| oats_framework::OatsError::action_failed("Target object not found"))?;
 
         let current_trait = target_object
             .get_trait(&self.trait_name)
-            .ok_or_else(|| oats::OatsError::trait_not_found(&self.trait_name))?;
+            .ok_or_else(|| oats_framework::OatsError::trait_not_found(&self.trait_name))?;
 
         let current_value = current_trait
             .data()
             .as_number()
-            .ok_or_else(|| oats::OatsError::action_failed("Trait is not numeric"))?;
+            .ok_or_else(|| oats_framework::OatsError::action_failed("Trait is not numeric"))?;
 
         let new_value = current_value + self.increment;
         let new_trait = Trait::new(&self.trait_name, TraitData::Number(new_value));
@@ -62,7 +59,7 @@ impl Action for TestIncrementAction {
 struct TestHealthSystem {
     name: String,
     description: String,
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl TestHealthSystem {
@@ -70,7 +67,7 @@ impl TestHealthSystem {
         Self {
             name: "test_health_system".to_string(),
             description: "Test health system".to_string(),
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -85,7 +82,7 @@ impl System for TestHealthSystem {
         &self.description
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -116,7 +113,7 @@ impl System for TestHealthSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }

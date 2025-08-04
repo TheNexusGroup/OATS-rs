@@ -1,6 +1,4 @@
-use oats::{
-    Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority,
-};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
 use std::collections::HashMap;
 use async_trait::async_trait;
 
@@ -17,7 +15,7 @@ impl Action for HealAction {
         "Restores health"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let target = context.get_object("target").unwrap();
         let current_health = target.get_trait("health")
             .and_then(|t| t.data().as_number())
@@ -46,7 +44,7 @@ impl Action for DamageAction {
         "Inflicts damage"
     }
 
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let target = context.get_object("target").unwrap();
         let current_health = target.get_trait("health")
             .and_then(|t| t.data().as_number())
@@ -75,7 +73,7 @@ impl Action for SetPositionAction {
         "Sets position"
     }
 
-    async fn execute(&self, _context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+    async fn execute(&self, _context: ActionContext) -> Result<ActionResult, oats_framework::OatsError> {
         let mut position_data = HashMap::new();
         position_data.insert("x".to_string(), serde_json::json!(10.0));
         position_data.insert("y".to_string(), serde_json::json!(20.0));
@@ -91,13 +89,13 @@ impl Action for SetPositionAction {
 
 // Custom health system
 struct HealthSystem {
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl HealthSystem {
     fn new() -> Self {
         Self {
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -112,7 +110,7 @@ impl System for HealthSystem {
         "Manages health-related operations"
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -143,20 +141,20 @@ impl System for HealthSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }
 
 // Custom position system
 struct PositionSystem {
-    stats: oats::systems::SystemStats,
+    stats: oats_framework::systems::SystemStats,
 }
 
 impl PositionSystem {
     fn new() -> Self {
         Self {
-            stats: oats::systems::SystemStats::default(),
+            stats: oats_framework::systems::SystemStats::default(),
         }
     }
 }
@@ -171,7 +169,7 @@ impl System for PositionSystem {
         "Manages position-related operations"
     }
 
-    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+    async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats_framework::OatsError> {
         let mut results = Vec::new();
         let start_time = std::time::Instant::now();
 
@@ -201,7 +199,7 @@ impl System for PositionSystem {
         Ok(results)
     }
 
-    fn get_stats(&self) -> oats::systems::SystemStats {
+    fn get_stats(&self) -> oats_framework::systems::SystemStats {
         self.stats.clone()
     }
 }
