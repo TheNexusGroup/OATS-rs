@@ -2,12 +2,15 @@
 name = "oats"
 version = "0.1.0"
 edition = "2021"
-authors = ["OATS Team"]
-description = "Universal architecture pattern for infinite scale across any domain"
+description = "Universal architecture pattern for infinite scale across any domain - Objects • Actions • Traits • Systems"
 license = "MIT"
-repository = "https://github.com/your-org/OATS-rs"
-keywords = ["architecture", "patterns", "scalable", "domain-driven"]
-categories = ["architecture", "patterns"]
+repository = "https://github.com/TheNexusGroup/OATS-rs"
+homepage = "https://github.com/TheNexusGroup/OATS-rs"
+documentation = "https://docs.rs/oats"
+readme = "README.md"
+keywords = ["oats", "architecture", "objects", "actions", "traits", "systems", "async", "concurrent", "scalable"]
+categories = ["asynchronous", "data-structures", "game-development", "web-programming", "api-bindings"]
+authors = ["The Nexus Group <info@thenexusgroup.com>"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
