@@ -1,4 +1,4 @@
-use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority};
 use std::collections::HashMap;
 use async_trait::async_trait;
 

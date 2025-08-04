@@ -1,6 +1,4 @@
-use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority, OatsError};
-use std::collections::HashMap;
-use async_trait::async_trait;
+use oats_framework::{Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority};
 
 // Custom test actions
 struct TestIncrementAction {
