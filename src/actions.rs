@@ -19,6 +19,7 @@ pub struct ActionContext {
 
 impl ActionContext {
     /// Create a new action context
+    #[inline]
     pub fn new() -> Self {
         Self {
             objects: HashMap::new(),
@@ -28,6 +29,7 @@ impl ActionContext {
     }
 
     /// Create a new action context with expected capacity
+    #[inline]
     pub fn with_capacity(expected_objects: usize, expected_parameters: usize) -> Self {
         Self {
             objects: HashMap::with_capacity(expected_objects),
@@ -37,16 +39,19 @@ impl ActionContext {
     }
 
     /// Add an object to the context
+    #[inline]
     pub fn add_object(&mut self, name: impl Into<String>, object: Object) {
         self.objects.insert(name.into(), object);
     }
 
     /// Get an object from the context
+    #[inline]
     pub fn get_object(&self, name: &str) -> Option<&Object> {
         self.objects.get(name)
     }
 
     /// Get multiple objects efficiently
+    #[inline]
     pub fn get_objects(&self, names: &[&str]) -> HashMap<String, &Object> {
         names.iter()
             .filter_map(|name| self.objects.get(*name).map(|obj| (name.to_string(), obj)))
@@ -54,23 +59,75 @@ impl ActionContext {
     }
 
     /// Add a parameter to the context
+    #[inline]
     pub fn add_parameter(&mut self, name: impl Into<String>, value: serde_json::Value) {
         self.parameters.insert(name.into(), value);
     }
 
     /// Get a parameter from the context
+    #[inline]
     pub fn get_parameter(&self, name: &str) -> Option<&serde_json::Value> {
         self.parameters.get(name)
     }
 
     /// Add metadata to the context
+    #[inline]
     pub fn add_metadata(&mut self, key: impl Into<String>, value: impl Into<String>) {
         self.metadata.insert(key.into(), value.into());
     }
 
     /// Get metadata from the context
+    #[inline]
     pub fn get_metadata(&self, key: &str) -> Option<&String> {
         self.metadata.get(key)
+    }
+
+    /// Get object count
+    #[inline]
+    pub fn object_count(&self) -> usize {
+        self.objects.len()
+    }
+
+    /// Get parameter count
+    #[inline]
+    pub fn parameter_count(&self) -> usize {
+        self.parameters.len()
+    }
+
+    /// Get metadata count
+    #[inline]
+    pub fn metadata_count(&self) -> usize {
+        self.metadata.len()
+    }
+
+    /// Reserve capacity for objects
+    #[inline]
+    pub fn reserve_objects(&mut self, additional: usize) {
+        self.objects.reserve(additional);
+    }
+
+    /// Reserve capacity for parameters
+    #[inline]
+    pub fn reserve_parameters(&mut self, additional: usize) {
+        self.parameters.reserve(additional);
+    }
+
+    /// Clear all objects
+    #[inline]
+    pub fn clear_objects(&mut self) {
+        self.objects.clear();
+    }
+
+    /// Clear all parameters
+    #[inline]
+    pub fn clear_parameters(&mut self) {
+        self.parameters.clear();
+    }
+
+    /// Clear all metadata
+    #[inline]
+    pub fn clear_metadata(&mut self) {
+        self.metadata.clear();
     }
 }
 
@@ -95,6 +152,7 @@ pub struct ActionResult {
 
 impl ActionResult {
     /// Create a successful action result
+    #[inline]
     pub fn success() -> Self {
         Self {
             success: true,
@@ -105,6 +163,7 @@ impl ActionResult {
     }
 
     /// Create a failed action result
+    #[inline]
     pub fn failure(message: impl Into<String>) -> Self {
         Self {
             success: false,
@@ -114,45 +173,99 @@ impl ActionResult {
         }
     }
 
+    /// Create a successful action result with pre-allocated capacity
+    pub fn success_with_capacity(trait_capacity: usize, message_capacity: usize, data_capacity: usize) -> Self {
+        Self {
+            success: true,
+            trait_updates: Vec::with_capacity(trait_capacity),
+            messages: Vec::with_capacity(message_capacity),
+            data: HashMap::with_capacity(data_capacity),
+        }
+    }
+
     /// Add a trait update to the result
+    #[inline]
     pub fn add_trait_update(&mut self, trait_obj: Trait) {
         self.trait_updates.push(trait_obj);
     }
 
     /// Add multiple trait updates efficiently
+    #[inline]
     pub fn add_trait_updates(&mut self, trait_updates: impl IntoIterator<Item = Trait>) {
         self.trait_updates.extend(trait_updates);
     }
 
     /// Add a message to the result
+    #[inline]
     pub fn add_message(&mut self, message: impl Into<String>) {
         self.messages.push(message.into());
     }
 
     /// Add multiple messages efficiently
+    #[inline]
     pub fn add_messages(&mut self, messages: impl IntoIterator<Item = String>) {
         self.messages.extend(messages);
     }
 
     /// Add data to the result
+    #[inline]
     pub fn add_data(&mut self, key: impl Into<String>, value: serde_json::Value) {
         self.data.insert(key.into(), value);
     }
 
     /// Reserve capacity for expected updates
+    #[inline]
     pub fn reserve_capacity(&mut self, trait_updates: usize, messages: usize) {
         self.trait_updates.reserve(trait_updates);
         self.messages.reserve(messages);
     }
 
     /// Check if the action was successful
+    #[inline]
     pub fn is_success(&self) -> bool {
         self.success
     }
 
     /// Check if the action failed
+    #[inline]
     pub fn is_failure(&self) -> bool {
         !self.success
+    }
+
+    /// Get trait update count
+    #[inline]
+    pub fn trait_update_count(&self) -> usize {
+        self.trait_updates.len()
+    }
+
+    /// Get message count
+    #[inline]
+    pub fn message_count(&self) -> usize {
+        self.messages.len()
+    }
+
+    /// Get data count
+    #[inline]
+    pub fn data_count(&self) -> usize {
+        self.data.len()
+    }
+
+    /// Clear all trait updates
+    #[inline]
+    pub fn clear_trait_updates(&mut self) {
+        self.trait_updates.clear();
+    }
+
+    /// Clear all messages
+    #[inline]
+    pub fn clear_messages(&mut self) {
+        self.messages.clear();
+    }
+
+    /// Clear all data
+    #[inline]
+    pub fn clear_data(&mut self) {
+        self.data.clear();
     }
 }
 

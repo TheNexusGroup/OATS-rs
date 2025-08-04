@@ -27,6 +27,7 @@ pub struct Object {
 
 impl Object {
     /// Create a new object with the given name and type
+    #[inline]
     pub fn new(name: impl Into<String>, object_type: impl Into<String>) -> Self {
         let now = chrono::Utc::now();
         Self {
@@ -47,29 +48,56 @@ impl Object {
         traits: Vec<Trait>,
     ) -> Self {
         let mut obj = Self::new(name, object_type);
-        for trait_obj in traits {
-            obj.add_trait(trait_obj);
-        }
+        obj.add_traits_bulk(traits);
         obj
     }
 
+    /// Create a new object with pre-allocated capacity
+    pub fn with_capacity(
+        name: impl Into<String>,
+        object_type: impl Into<String>,
+        trait_capacity: usize,
+        metadata_capacity: usize,
+    ) -> Self {
+        let now = chrono::Utc::now();
+        Self {
+            id: Uuid::new_v4(),
+            name: name.into(),
+            object_type: object_type.into(),
+            traits: HashMap::with_capacity(trait_capacity),
+            metadata: HashMap::with_capacity(metadata_capacity),
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
     /// Get the object name
+    #[inline]
     pub fn name(&self) -> &str {
         &self.name
     }
 
     /// Get the object type
+    #[inline]
     pub fn object_type(&self) -> &str {
         &self.object_type
     }
 
+    /// Get the object ID
+    #[inline]
+    pub fn id(&self) -> ObjectId {
+        self.id
+    }
+
     /// Add a trait to this object
+    #[inline]
     pub fn add_trait(&mut self, trait_obj: Trait) {
         self.traits.insert(trait_obj.name().to_string(), trait_obj);
         self.updated_at = chrono::Utc::now();
     }
 
     /// Add multiple traits efficiently
+    #[inline]
     pub fn add_traits(&mut self, traits: impl IntoIterator<Item = Trait>) {
         let mut updated = false;
         for trait_obj in traits {
@@ -82,6 +110,7 @@ impl Object {
     }
 
     /// Add multiple traits without timestamp updates (for bulk operations)
+    #[inline]
     pub fn add_traits_bulk(&mut self, traits: impl IntoIterator<Item = Trait>) {
         for trait_obj in traits {
             self.traits.insert(trait_obj.name().to_string(), trait_obj);
@@ -90,12 +119,14 @@ impl Object {
     }
 
     /// Add a trait without timestamp update (for internal operations)
+    #[inline]
     pub fn add_trait_internal(&mut self, trait_obj: Trait) {
         self.traits.insert(trait_obj.name().to_string(), trait_obj);
         // Don't update timestamp for internal operations
     }
 
     /// Remove a trait from this object
+    #[inline]
     pub fn remove_trait(&mut self, trait_name: &str) -> Option<Trait> {
         let result = self.traits.remove(trait_name);
         if result.is_some() {
@@ -105,84 +136,118 @@ impl Object {
     }
 
     /// Get a trait by name
+    #[inline]
     pub fn get_trait(&self, trait_name: &str) -> Option<&Trait> {
         self.traits.get(trait_name)
     }
 
     /// Get a trait by name (mutable)
+    #[inline]
     pub fn get_trait_mut(&mut self, trait_name: &str) -> Option<&mut Trait> {
         self.traits.get_mut(trait_name)
     }
 
     /// Get trait data by name (zero-copy access)
+    #[inline]
     pub fn get_trait_data(&self, trait_name: &str) -> Option<&crate::traits::TraitData> {
         self.traits.get(trait_name).map(|t| t.data())
     }
 
     /// Get trait data by name (mutable, zero-copy access)
+    #[inline]
     pub fn get_trait_data_mut(&mut self, trait_name: &str) -> Option<&mut crate::traits::TraitData> {
         self.traits.get_mut(trait_name).map(|t| t.data_mut())
     }
 
     /// Get all traits
+    #[inline]
     pub fn traits(&self) -> &HashMap<String, Trait> {
         &self.traits
     }
 
     /// Check if the object has a specific trait
+    #[inline]
     pub fn has_trait(&self, trait_name: &str) -> bool {
         self.traits.contains_key(trait_name)
     }
 
     /// Check if the object has multiple traits (efficient batch check)
+    #[inline]
     pub fn has_traits(&self, trait_names: &[&str]) -> bool {
         trait_names.iter().all(|name| self.traits.contains_key(*name))
     }
 
     /// Check if the object has any traits
+    #[inline]
     pub fn has_any_traits(&self) -> bool {
         !self.traits.is_empty()
     }
 
     /// Get a metadata value
+    #[inline]
     pub fn get_metadata(&self, key: &str) -> Option<&String> {
         self.metadata.get(key)
     }
 
     /// Set a metadata value
+    #[inline]
     pub fn set_metadata(&mut self, key: impl Into<String>, value: impl Into<String>) {
         self.metadata.insert(key.into(), value.into());
         self.updated_at = chrono::Utc::now();
     }
 
     /// Get all metadata
+    #[inline]
     pub fn metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
 
     /// Get the creation timestamp
+    #[inline]
     pub fn created_at(&self) -> chrono::DateTime<chrono::Utc> {
         self.created_at
     }
 
     /// Get the last update timestamp
+    #[inline]
     pub fn updated_at(&self) -> chrono::DateTime<chrono::Utc> {
         self.updated_at
     }
 
     /// Get trait names as a vector
+    #[inline]
     pub fn trait_names(&self) -> Vec<&String> {
         self.traits.keys().collect()
     }
 
     /// Get trait IDs as a vector
+    #[inline]
     pub fn trait_ids(&self) -> Vec<TraitId> {
         self.traits.values().map(|t| t.id).collect()
     }
 
     /// Get the number of traits
+    #[inline]
     pub fn trait_count(&self) -> usize {
         self.traits.len()
+    }
+
+    /// Get the number of metadata entries
+    #[inline]
+    pub fn metadata_count(&self) -> usize {
+        self.metadata.len()
+    }
+
+    /// Reserve capacity for traits
+    #[inline]
+    pub fn reserve_traits(&mut self, additional: usize) {
+        self.traits.reserve(additional);
+    }
+
+    /// Reserve capacity for metadata
+    #[inline]
+    pub fn reserve_metadata(&mut self, additional: usize) {
+        self.metadata.reserve(additional);
     }
 
     /// Validate that the object has required traits

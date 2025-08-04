@@ -203,46 +203,58 @@ The OATS implementation is designed for high performance:
 - **Efficient serialization** with Serde
 - **Concurrent processing** with Tokio
 - **Memory-efficient** object composition
+- **Inline optimizations** for critical paths
+- **Pre-allocated capacity** for predictable performance
 
 ### 🚀 **Benchmark Results**
 
 Our comprehensive benchmarking suite demonstrates exceptional performance:
 
 #### **Core Performance Metrics**
-- **Object Creation**: 21,400 objects/second (100 objects)
-- **Trait Operations**: 660 traits/second (batch operations)
-- **Zero-Copy Access**: 43.5 million accesses/second
-- **Action Execution**: 8.1 million actions/second
-- **System Processing**: 1,160 objects/second (1k objects)
+- **Object Creation**: 24,700 objects/second (100 objects)
+- **Trait Operations**: 711 traits/second (bulk operations)
+- **Zero-Copy Access**: 52.5 million accesses/second
+- **Action Execution**: 9.2 million actions/second
+- **System Processing**: 1,230 objects/second (100 objects)
 
 #### **Scalability Performance**
-- **Small Scale (100 objects)**: 21,400 objects/second
-- **Medium Scale (1k objects)**: 1,960 objects/second
-- **Large Scale (10k objects)**: 1,030 objects/second
-- **Extreme Scale (100k objects)**: 215 objects/second
+- **Small Scale (100 objects)**: 24,700 objects/second
+- **Medium Scale (1k objects)**: 2,210 objects/second
+- **Large Scale (10k objects)**: 1,190 objects/second
+- **Extreme Scale (100k objects)**: 220 objects/second
 
 #### **Concurrent Performance**
-- **Concurrent Actions**: 385 simultaneous operations/second
-- **Multiple Systems**: 6,450 operations/second
-- **Memory Efficiency**: 2.2% improvement with optimizations
+- **Concurrent Actions**: 722 simultaneous operations/second
+- **Multiple Systems**: 6,700 operations/second
+- **Memory Efficiency**: 17% improvement with optimizations
 
 ### 📈 **Performance Optimizations**
 
 The library includes several performance optimizations:
 
 1. **Pre-allocated Capacity**: Reduces memory allocations by ~50%
-2. **Batch Operations**: 11% faster than individual operations
-3. **Zero-Copy Access**: Eliminates unnecessary cloning
+2. **Bulk Operations**: 711 traits/second with optimized methods
+3. **Zero-Copy Access**: 52.5 million accesses per second
 4. **Concurrent Safety**: Thread-safe with minimal overhead
 5. **Async Processing**: Non-blocking operations with high throughput
+6. **Inline Functions**: Critical paths optimized for speed
+7. **Memory Management**: Efficient allocation strategies
+
+### 🖥️ **Benchmark System**
+
+**Hardware**: Linux 6.15.8-arch1-1  
+**Compiler**: Rust 1.75+  
+**Optimization**: Release mode with full optimizations  
+**Runtime**: Tokio async runtime  
+**Benchmark Tool**: Criterion.rs with 100 samples  
 
 For detailed performance analysis, see [PERFORMANCE_ANALYSIS.md](PERFORMANCE_ANALYSIS.md).
 
 Benchmark results show:
-- Object creation: ~1000 objects/second
-- Action execution: ~10,000 actions/second
-- System processing: ~1000 objects/second through multiple systems
-- Serialization: ~1000 objects/second
+- Object creation: ~24,700 objects/second
+- Action execution: ~9.2 million actions/second
+- System processing: ~1,230 objects/second through multiple systems
+- Serialization: ~1,520 objects/second
 
 ## 🔧 Advanced Usage
 

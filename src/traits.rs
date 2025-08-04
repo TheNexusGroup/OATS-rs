@@ -39,6 +39,7 @@ pub enum TraitData {
 
 impl Trait {
     /// Create a new trait with the given name and data
+    #[inline]
     pub fn new(name: impl Into<String>, data: TraitData) -> Self {
         Self {
             id: Uuid::new_v4(),
@@ -64,27 +65,59 @@ impl Trait {
         }
     }
 
+    /// Create a new trait with pre-allocated capacity
+    pub fn with_capacity(
+        name: impl Into<String>,
+        data: TraitData,
+        metadata_capacity: usize,
+    ) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            name: name.into(),
+            version: 1,
+            data,
+            metadata: HashMap::with_capacity(metadata_capacity),
+        }
+    }
+
     /// Get the trait name
+    #[inline]
     pub fn name(&self) -> &str {
         &self.name
     }
 
     /// Get the trait data
+    #[inline]
     pub fn data(&self) -> &TraitData {
         &self.data
     }
 
     /// Get mutable trait data
+    #[inline]
     pub fn data_mut(&mut self) -> &mut TraitData {
         &mut self.data
     }
 
+    /// Get the trait ID
+    #[inline]
+    pub fn id(&self) -> TraitId {
+        self.id
+    }
+
+    /// Get the trait version
+    #[inline]
+    pub fn version(&self) -> u32 {
+        self.version
+    }
+
     /// Get a metadata value
+    #[inline]
     pub fn get_metadata(&self, key: &str) -> Option<&String> {
         self.metadata.get(key)
     }
 
     /// Set a metadata value
+    #[inline]
     pub fn set_metadata(&mut self, key: impl Into<String>, value: impl Into<String>) {
         self.metadata.insert(key.into(), value.into());
     }
@@ -98,6 +131,24 @@ impl Trait {
             data,
             metadata: self.metadata.clone(),
         }
+    }
+
+    /// Get metadata count
+    #[inline]
+    pub fn metadata_count(&self) -> usize {
+        self.metadata.len()
+    }
+
+    /// Reserve capacity for metadata
+    #[inline]
+    pub fn reserve_metadata(&mut self, additional: usize) {
+        self.metadata.reserve(additional);
+    }
+
+    /// Clear all metadata
+    #[inline]
+    pub fn clear_metadata(&mut self) {
+        self.metadata.clear();
     }
 }
 
