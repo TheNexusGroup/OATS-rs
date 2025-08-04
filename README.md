@@ -400,7 +400,6 @@ This pattern runs the foundational infrastructure behind every platform that ach
 
 - [API Documentation](https://docs.rs/oats-framework)
 - [Architecture Guide](architecture.mmd)
-- [Performance Guide](PERFORMANCE_ANALYSIS.md)
 - [Examples Directory](examples/)
 
 ## 🤝 Contributing
