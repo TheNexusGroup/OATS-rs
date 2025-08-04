@@ -1,14 +1,11 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use oats::{
-    Object, Trait, Action, System,
-    traits::TraitData,
-    actions::{ActionContext, ActionResult, SimpleAction},
-    systems::{SystemManager, Priority},
+    Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority,
 };
 use std::collections::HashMap;
 use async_trait::async_trait;
 
-// Custom benchmark actions
+// Benchmark increment action
 #[derive(Clone)]
 struct BenchmarkIncrementAction {
     trait_name: String,
@@ -31,49 +28,32 @@ impl Action for BenchmarkIncrementAction {
     }
 
     fn description(&self) -> &str {
-        "Benchmark action that increments a trait"
+        "Benchmark increment action"
     }
 
     async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
-        let target_object = context
-            .get_object("target")
-            .ok_or_else(|| oats::OatsError::action_failed("Target object not found"))?;
-
-        let current_trait = target_object
-            .get_trait(&self.trait_name)
-            .ok_or_else(|| oats::OatsError::trait_not_found(&self.trait_name))?;
-
-        let current_value = current_trait
-            .data()
-            .as_number()
-            .ok_or_else(|| oats::OatsError::action_failed("Trait is not numeric"))?;
-
+        let target = context.get_object("target").unwrap();
+        let current_value = target.get_trait(&self.trait_name)
+            .and_then(|t| t.data().as_number())
+            .unwrap_or(0.0);
+        
         let new_value = current_value + self.increment;
         let new_trait = Trait::new(&self.trait_name, TraitData::Number(new_value));
-
+        
         let mut result = ActionResult::success();
         result.add_trait_update(new_trait);
-        result.add_message(format!(
-            "Incremented {} from {} to {}",
-            self.trait_name, current_value, new_value
-        ));
-
         Ok(result)
     }
 }
 
-// Custom benchmark system
+// Benchmark system
 struct BenchmarkSystem {
-    name: String,
-    description: String,
     stats: oats::systems::SystemStats,
 }
 
 impl BenchmarkSystem {
     fn new() -> Self {
         Self {
-            name: "benchmark_system".to_string(),
-            description: "Benchmark system".to_string(),
             stats: oats::systems::SystemStats::default(),
         }
     }
@@ -82,33 +62,29 @@ impl BenchmarkSystem {
 #[async_trait]
 impl System for BenchmarkSystem {
     fn name(&self) -> &str {
-        &self.name
+        "benchmark_system"
     }
 
     fn description(&self) -> &str {
-        &self.description
+        "Benchmark system"
     }
 
     async fn process(&mut self, objects: Vec<Object>, _priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
-        let mut results = Vec::new();
+        let mut results = Vec::with_capacity(objects.len());
         let start_time = std::time::Instant::now();
 
         for object in objects {
-            if object.has_trait("health") {
-                let health_action = BenchmarkIncrementAction::new("health", -1.0);
-                let mut context = ActionContext::new();
-                context.add_object("target", object);
-
-                match health_action.execute(context).await {
-                    Ok(result) => {
-                        results.push(result);
-                        self.stats.actions_executed += 1;
-                    }
-                    Err(e) => {
-                        self.stats.errors += 1;
-                        let error_result = ActionResult::failure(format!("Health action failed: {}", e));
-                        results.push(error_result);
-                    }
+            let action = BenchmarkIncrementAction::new("health", 1.0);
+            let mut context = ActionContext::new();
+            context.add_object("target", object);
+            
+            match action.execute(context).await {
+                Ok(result) => {
+                    results.push(result);
+                    self.stats.actions_executed += 1;
+                }
+                Err(_) => {
+                    self.stats.errors += 1;
                 }
             }
             self.stats.objects_processed += 1;
@@ -295,17 +271,14 @@ fn benchmark_action_execution(c: &mut Criterion) {
     group.bench_function("simple_action", |b| {
         b.iter(|| {
             rt.block_on(async {
-                let action = SimpleAction::new(
-                    "test_action",
-                    "A test action",
-                    |context| {
-                        let mut result = ActionResult::success();
-                        result.add_message("Action executed");
-                        Ok(result)
-                    },
-                );
+                let action = BenchmarkIncrementAction::new("health", 10.0);
+                let mut obj = Object::new("test", "type");
+                let health_trait = Trait::new("health", TraitData::Number(100.0));
+                obj.add_trait(health_trait);
                 
-                let context = ActionContext::new();
+                let mut context = ActionContext::new();
+                context.add_object("target", obj);
+                
                 black_box(action.execute(context).await.unwrap());
             });
         });
@@ -330,18 +303,14 @@ fn benchmark_action_execution(c: &mut Criterion) {
     group.bench_function("action_with_capacity", |b| {
         b.iter(|| {
             rt.block_on(async {
-                let action = SimpleAction::new(
-                    "test_action",
-                    "A test action",
-                    |context| {
-                        let mut result = ActionResult::success();
-                        result.reserve_capacity(5, 3); // Pre-allocate
-                        result.add_message("Action executed");
-                        Ok(result)
-                    },
-                );
+                let action = BenchmarkIncrementAction::new("health", 10.0);
+                let mut obj = Object::new("test", "type");
+                let health_trait = Trait::new("health", TraitData::Number(100.0));
+                obj.add_trait(health_trait);
                 
-                let context = ActionContext::with_capacity(2, 1);
+                let mut context = ActionContext::with_capacity(2, 1);
+                context.add_object("target", obj);
+                
                 black_box(action.execute(context).await.unwrap());
             });
         });
@@ -588,8 +557,7 @@ fn benchmark_stress_tests(c: &mut Criterion) {
                 
                 // Add many systems to test system management
                 for i in 0..50 {
-                    let mut system = BenchmarkSystem::new();
-                    system.name = format!("system_{}", i);
+                    let system = BenchmarkSystem::new();
                     manager.add_system(Box::new(system));
                 }
                 

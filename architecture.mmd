@@ -1,0 +1,37 @@
+
+graph TB
+    subgraph "OATS Core Components"
+        O[Objects] --> T[Traits]
+        A[Actions] --> O
+        S[Systems] --> A
+        S --> O
+    end
+    
+    subgraph "Object Composition"
+        O1[Object: Player] --> T1[Trait: Health]
+        O1 --> T2[Trait: Position]
+        O1 --> T3[Trait: Inventory]
+        
+        O2[Object: Enemy] --> T4[Trait: Health]
+        O2 --> T5[Trait: AI State]
+    end
+    
+    subgraph "Action Processing"
+        A1[Action: Heal] --> C1[Context]
+        A1 --> R1[Result: Health +25]
+        
+        A2[Action: Move] --> C2[Context]
+        A2 --> R2[Result: Position Updated]
+    end
+    
+    subgraph "System Orchestration"
+        S1[Health System] --> A1
+        S2[Movement System] --> A2
+        S3[Combat System] --> A3[Action: Attack]
+    end
+    
+    subgraph "Data Flow"
+        T1 --> A1
+        T2 --> A2
+        T4 --> A3
+    end

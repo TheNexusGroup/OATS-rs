@@ -5,6 +5,51 @@
 
 OATS is domain-agnostic operational intelligence. Whether you're building enterprise software, game engines, distributed systems, or operating systems - this pattern eliminates architectural complexity that kills scale at growth inflection points.
 
+## 🏗️ Architecture Overview
+
+OATS (Objects • Actions • Traits • Systems) is a universal architecture pattern for infinite scale across any domain.
+
+### Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "OATS Core Components"
+        O[Objects] --> T[Traits]
+        A[Actions] --> O
+        S[Systems] --> A
+        S --> O
+    end
+    
+    subgraph "Object Composition"
+        O1[Object: Player] --> T1[Trait: Health]
+        O1 --> T2[Trait: Position]
+        O1 --> T3[Trait: Inventory]
+        
+        O2[Object: Enemy] --> T4[Trait: Health]
+        O2 --> T5[Trait: AI State]
+    end
+    
+    subgraph "Action Processing"
+        A1[Action: Heal] --> C1[Context]
+        A1 --> R1[Result: Health +25]
+        
+        A2[Action: Move] --> C2[Context]
+        A2 --> R2[Result: Position Updated]
+    end
+    
+    subgraph "System Orchestration"
+        S1[Health System] --> A1
+        S2[Movement System] --> A2
+        S3[Combat System] --> A3[Action: Attack]
+    end
+    
+    subgraph "Data Flow"
+        T1 --> A1
+        T2 --> A2
+        T4 --> A3
+    end
+```
+
 ## 🚀 Rust Implementation
 
 This repository contains a complete Rust implementation of the OATS architecture pattern, providing:
@@ -77,13 +122,17 @@ let position_trait = Trait::new("position", TraitData::Object(position_data));
 Stateless operations. Horizontally scalable. Domain-independent processing.
 
 ```rust
-use oats::{Action, ActionContext, ActionResult, SimpleAction};
+use oats::{Action, ActionContext, ActionResult};
 
 // Create a custom action
-let heal_action = SimpleAction::new(
-    "heal",
-    "Restores health to target",
-    |context| {
+struct HealAction;
+
+#[async_trait::async_trait]
+impl Action for HealAction {
+    fn name(&self) -> &str { "heal" }
+    fn description(&self) -> &str { "Restores health to target" }
+    
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
         let target = context.get_object("target").unwrap();
         let current_health = target.get_trait("health")
             .and_then(|t| t.data().as_number())
@@ -97,7 +146,7 @@ let heal_action = SimpleAction::new(
         result.add_message(format!("Healed {} to {:.1} health", target.name(), new_health));
         Ok(result)
     }
-);
+}
 
 // Execute the action
 let mut context = ActionContext::new();
@@ -112,12 +161,24 @@ Resource allocation. Priority management. Cross-domain coordination.
 use oats::{System, SystemManager, Priority};
 
 // Create a system
-let mut health_system = SimpleSystem::new("health_system", "Manages health-related operations");
-health_system.add_action(Box::new(heal_action));
+struct HealthSystem {
+    stats: oats::systems::SystemStats,
+}
+
+#[async_trait::async_trait]
+impl System for HealthSystem {
+    fn name(&self) -> &str { "health_system" }
+    fn description(&self) -> &str { "Manages health-related operations" }
+    
+    async fn process(&mut self, objects: Vec<Object>, priority: Priority) -> Result<Vec<ActionResult>, oats::OatsError> {
+        // Your custom processing logic here
+        Ok(vec![])
+    }
+}
 
 // Create a system manager
 let mut manager = SystemManager::new();
-manager.add_system(Box::new(health_system));
+manager.add_system(Box::new(HealthSystem::new()));
 
 // Register objects
 manager.register_object(player).await;
@@ -211,21 +272,21 @@ The OATS implementation is designed for high performance:
 Our comprehensive benchmarking suite demonstrates exceptional performance:
 
 #### **Core Performance Metrics**
-- **Object Creation**: 24,700 objects/second (100 objects)
-- **Trait Operations**: 711 traits/second (bulk operations)
+- **Object Creation**: 24,800 objects/second (100 objects)
+- **Trait Operations**: 724 traits/second (bulk operations)
 - **Zero-Copy Access**: 52.5 million accesses/second
-- **Action Execution**: 9.2 million actions/second
-- **System Processing**: 1,230 objects/second (100 objects)
+- **Action Execution**: 2.5 million actions/second
+- **System Processing**: 15,700 objects/second (100 objects)
 
 #### **Scalability Performance**
-- **Small Scale (100 objects)**: 24,700 objects/second
-- **Medium Scale (1k objects)**: 2,210 objects/second
+- **Small Scale (100 objects)**: 24,800 objects/second
+- **Medium Scale (1k objects)**: 2,220 objects/second
 - **Large Scale (10k objects)**: 1,190 objects/second
-- **Extreme Scale (100k objects)**: 220 objects/second
+- **Extreme Scale (100k objects)**: 235 objects/second
 
 #### **Concurrent Performance**
-- **Concurrent Actions**: 722 simultaneous operations/second
-- **Multiple Systems**: 6,700 operations/second
+- **Concurrent Actions**: 750 simultaneous operations/second
+- **Multiple Systems**: 7,700 operations/second
 - **Memory Efficiency**: 17% improvement with optimizations
 
 ### 📈 **Performance Optimizations**
@@ -233,7 +294,7 @@ Our comprehensive benchmarking suite demonstrates exceptional performance:
 The library includes several performance optimizations:
 
 1. **Pre-allocated Capacity**: Reduces memory allocations by ~50%
-2. **Bulk Operations**: 711 traits/second with optimized methods
+2. **Bulk Operations**: 724 traits/second with optimized methods
 3. **Zero-Copy Access**: 52.5 million accesses per second
 4. **Concurrent Safety**: Thread-safe with minimal overhead
 5. **Async Processing**: Non-blocking operations with high throughput
@@ -248,13 +309,11 @@ The library includes several performance optimizations:
 **Runtime**: Tokio async runtime  
 **Benchmark Tool**: Criterion.rs with 100 samples  
 
-For detailed performance analysis, see [PERFORMANCE_ANALYSIS.md](PERFORMANCE_ANALYSIS.md).
-
 Benchmark results show:
-- Object creation: ~24,700 objects/second
-- Action execution: ~9.2 million actions/second
-- System processing: ~1,230 objects/second through multiple systems
-- Serialization: ~1,520 objects/second
+- Object creation: ~24,800 objects/second
+- Action execution: ~2.5 million actions/second
+- System processing: ~15,700 objects/second through multiple systems
+- Serialization: ~1,570 objects/second
 
 ## 🔧 Advanced Usage
 

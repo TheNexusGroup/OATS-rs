@@ -16,7 +16,7 @@ pub mod error;
 
 // Re-export main types for convenience
 pub use objects::Object;
-pub use actions::{Action, ActionContext, ActionResult, SimpleAction};
+pub use actions::{Action, ActionContext, ActionResult};
 pub use traits::{Trait, TraitData};
 pub use systems::{System, SystemManager, Priority};
 pub use error::OatsError;

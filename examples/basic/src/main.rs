@@ -1,9 +1,93 @@
 use oats::{
     Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority,
-    actions::SimpleAction,
 };
 use std::collections::HashMap;
 use async_trait::async_trait;
+
+// Custom heal action
+struct HealAction;
+
+#[async_trait]
+impl Action for HealAction {
+    fn name(&self) -> &str {
+        "heal"
+    }
+
+    fn description(&self) -> &str {
+        "Restores health"
+    }
+
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+        let target = context.get_object("target").unwrap();
+        let current_health = target.get_trait("health")
+            .and_then(|t| t.data().as_number())
+            .unwrap_or(0.0);
+        
+        let new_health = (current_health + 25.0).min(100.0);
+        let health_trait = Trait::new("health", TraitData::Number(new_health));
+        
+        let mut result = ActionResult::success();
+        result.add_trait_update(health_trait);
+        result.add_message(format!("Incremented health from {} to {}", current_health, new_health));
+        Ok(result)
+    }
+}
+
+// Custom damage action
+struct DamageAction;
+
+#[async_trait]
+impl Action for DamageAction {
+    fn name(&self) -> &str {
+        "damage"
+    }
+
+    fn description(&self) -> &str {
+        "Inflicts damage"
+    }
+
+    async fn execute(&self, context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+        let target = context.get_object("target").unwrap();
+        let current_health = target.get_trait("health")
+            .and_then(|t| t.data().as_number())
+            .unwrap_or(0.0);
+        
+        let new_health = (current_health - 10.0).max(0.0);
+        let health_trait = Trait::new("health", TraitData::Number(new_health));
+        
+        let mut result = ActionResult::success();
+        result.add_trait_update(health_trait);
+        result.add_message(format!("Decremented health from {} to {}", current_health, new_health));
+        Ok(result)
+    }
+}
+
+// Custom set position action
+struct SetPositionAction;
+
+#[async_trait]
+impl Action for SetPositionAction {
+    fn name(&self) -> &str {
+        "set_position"
+    }
+
+    fn description(&self) -> &str {
+        "Sets position"
+    }
+
+    async fn execute(&self, _context: ActionContext) -> Result<ActionResult, oats::OatsError> {
+        let mut position_data = HashMap::new();
+        position_data.insert("x".to_string(), serde_json::json!(10.0));
+        position_data.insert("y".to_string(), serde_json::json!(20.0));
+        
+        let position_trait = Trait::new("position", TraitData::Object(position_data));
+        
+        let mut result = ActionResult::success();
+        result.add_trait_update(position_trait);
+        result.add_message("Set position to Object({})");
+        Ok(result)
+    }
+}
 
 // Custom health system
 struct HealthSystem {
@@ -34,25 +118,7 @@ impl System for HealthSystem {
 
         for object in objects {
             if object.has_trait("health") {
-                let heal_action = SimpleAction::new(
-                    "heal",
-                    "Restores health",
-                    |context| {
-                        let target = context.get_object("target").unwrap();
-                        let current_health = target.get_trait("health")
-                            .and_then(|t| t.data().as_number())
-                            .unwrap_or(0.0);
-                        
-                        let new_health = (current_health + 25.0).min(100.0);
-                        let health_trait = Trait::new("health", TraitData::Number(new_health));
-                        
-                        let mut result = ActionResult::success();
-                        result.add_trait_update(health_trait);
-                        result.add_message(format!("Incremented health from {} to {}", current_health, new_health));
-                        Ok(result)
-                    },
-                );
-
+                let heal_action = HealAction;
                 let mut context = ActionContext::new();
                 context.add_object("target", object);
                 
@@ -111,23 +177,7 @@ impl System for PositionSystem {
 
         for object in objects {
             if object.has_trait("position") {
-                let set_position_action = SimpleAction::new(
-                    "set_position",
-                    "Sets position",
-                    |_context| {
-                        let mut position_data = HashMap::new();
-                        position_data.insert("x".to_string(), serde_json::json!(10.0));
-                        position_data.insert("y".to_string(), serde_json::json!(20.0));
-                        
-                        let position_trait = Trait::new("position", TraitData::Object(position_data));
-                        
-                        let mut result = ActionResult::success();
-                        result.add_trait_update(position_trait);
-                        result.add_message("Set position to Object({})");
-                        Ok(result)
-                    },
-                );
-
+                let set_position_action = SetPositionAction;
                 let context = ActionContext::new();
                 
                 match set_position_action.execute(context).await {
@@ -182,58 +232,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create actions
     println!("\n2. Creating actions...");
     
-    let heal_action = SimpleAction::new(
-        "heal",
-        "Restores health",
-        |context| {
-            let target = context.get_object("target").unwrap();
-            let current_health = target.get_trait("health")
-                .and_then(|t| t.data().as_number())
-                .unwrap_or(0.0);
-            
-            let new_health = (current_health + 25.0).min(100.0);
-            let health_trait = Trait::new("health", TraitData::Number(new_health));
-            
-            let mut result = ActionResult::success();
-            result.add_trait_update(health_trait);
-            result.add_message(format!("Incremented health from {} to {}", current_health, new_health));
-            Ok(result)
-        },
-    );
-    let damage_action = SimpleAction::new(
-        "damage",
-        "Inflicts damage",
-        |context| {
-            let target = context.get_object("target").unwrap();
-            let current_health = target.get_trait("health")
-                .and_then(|t| t.data().as_number())
-                .unwrap_or(0.0);
-            
-            let new_health = (current_health - 10.0).max(0.0);
-            let health_trait = Trait::new("health", TraitData::Number(new_health));
-            
-            let mut result = ActionResult::success();
-            result.add_trait_update(health_trait);
-            result.add_message(format!("Decremented health from {} to {}", current_health, new_health));
-            Ok(result)
-        },
-    );
-    let set_position_action = SimpleAction::new(
-        "set_position",
-        "Sets position",
-        |_context| {
-            let mut position_data = HashMap::new();
-            position_data.insert("x".to_string(), serde_json::json!(10.0));
-            position_data.insert("y".to_string(), serde_json::json!(20.0));
-            
-            let position_trait = Trait::new("position", TraitData::Object(position_data));
-            
-            let mut result = ActionResult::success();
-            result.add_trait_update(position_trait);
-            result.add_message("Set position to Object({})");
-            Ok(result)
-        },
-    );
+    let heal_action = HealAction;
+    let damage_action = DamageAction;
+    let set_position_action = SetPositionAction;
 
     println!("   Created heal action: {}", heal_action.name());
     println!("   Created damage action: {}", damage_action.name());

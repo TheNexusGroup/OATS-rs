@@ -1,10 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use oats::{
     Object, Trait, TraitData, Action, ActionContext, ActionResult, System, SystemManager, Priority,
-    actions::SimpleAction,
-    systems::SimpleSystem,
 };
-use std::collections::HashMap;
 use async_trait::async_trait;
 
 // Simple benchmark action
@@ -123,15 +120,7 @@ fn simple_benchmarks(c: &mut Criterion) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         b.iter(|| {
             rt.block_on(async {
-                let action = SimpleAction::new(
-                    "test_action",
-                    "A test action",
-                    |_context| {
-                        let mut result = ActionResult::success();
-                        result.add_message("Action executed");
-                        Ok(result)
-                    },
-                );
+                let action = SimpleBenchmarkAction;
                 let context = ActionContext::new();
                 black_box(action.execute(context).await.unwrap());
             });

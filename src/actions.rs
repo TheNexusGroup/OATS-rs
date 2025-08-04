@@ -292,96 +292,9 @@ pub trait Action: Send + Sync {
     }
 }
 
-/// A simple action that can be created from a closure
-pub struct SimpleAction<F> {
-    name: String,
-    description: String,
-    required_traits: Vec<String>,
-    optional_traits: Vec<String>,
-    executor: F,
-}
-
-impl<F> SimpleAction<F>
-where
-    F: Fn(ActionContext) -> Result<ActionResult> + Send + Sync,
-{
-    /// Create a new simple action
-    pub fn new(
-        name: impl Into<String>,
-        description: impl Into<String>,
-        executor: F,
-    ) -> Self {
-        Self {
-            name: name.into(),
-            description: description.into(),
-            required_traits: Vec::new(),
-            optional_traits: Vec::new(),
-            executor,
-        }
-    }
-
-    /// Set required traits for this action
-    pub fn with_required_traits(mut self, traits: Vec<String>) -> Self {
-        self.required_traits = traits;
-        self
-    }
-
-    /// Set optional traits for this action
-    pub fn with_optional_traits(mut self, traits: Vec<String>) -> Self {
-        self.optional_traits = traits;
-        self
-    }
-}
-
-#[async_trait]
-impl<F> Action for SimpleAction<F>
-where
-    F: Fn(ActionContext) -> Result<ActionResult> + Send + Sync,
-{
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn description(&self) -> &str {
-        &self.description
-    }
-
-    async fn execute(&self, context: ActionContext) -> Result<ActionResult> {
-        (self.executor)(context)
-    }
-
-    fn required_traits(&self) -> Vec<String> {
-        self.required_traits.clone()
-    }
-
-    fn optional_traits(&self) -> Vec<String> {
-        self.optional_traits.clone()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[tokio::test]
-    async fn test_simple_action() {
-        let action = SimpleAction::new(
-            "test_action",
-            "A test action",
-            |_context| {
-                let mut result = ActionResult::success();
-                result.add_message("Test action executed");
-                Ok(result)
-            },
-        );
-
-        let context = ActionContext::new();
-        let result = action.execute(context).await.unwrap();
-
-        assert!(result.is_success());
-        assert_eq!(result.messages.len(), 1);
-        assert_eq!(result.messages[0], "Test action executed");
-    }
 
     #[test]
     fn test_action_context() {
